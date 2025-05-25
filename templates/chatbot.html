@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTools - Assistente Docente</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stockwise.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="logo-text">EduTools</div>
+                </div>
+                <div class="sidebar-collapse">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+            </div>
+            <div class="sidebar-content">
+                <div class="menu-section">
+                    <div class="menu-section-title">MAIN MENU</div>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="{{ url_for('home') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-th-large"></i>
+                                </div>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="menu-item active">
+                            <a href="{{ url_for('chatbot') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-comment-dots"></i>
+                                </div>
+                                Assistente Docente
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('valutazione') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                                Valutazione RIZA
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('view_observations') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                Visualizza Osservazioni
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                {% if session.get('user_role') == 'admin' %}
+                <div class="menu-section">
+                    <div class="menu-section-title">AMMINISTRAZIONE</div>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="{{ url_for('admin_dashboard') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                Dashboard Admin
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('admin_users') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                Gestione Utenti
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('admin_conversations') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                Monitoraggio Conversazioni
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">SUPPORTO</div>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="#">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                Guida
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                Supporto
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="header-search">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="Cerca osservazioni, allievi o classi...">
+                    <div class="search-shortcut">/</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="header-icon">
+                    <i class="far fa-star"></i>
+                </div>
+                <div class="header-icon">
+                    <i class="far fa-bell"></i>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <img src="https://ui-avatars.com/api/?name={{ session.get('user_name', 'User') }}&background=0052FF&color=fff" alt="User Avatar">
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ session.get('user_name', 'User') }}</div>
+                        <div class="user-email">{{ session.get('user_email', 'user@example.com') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="dashboard-grid">
+                <div class="grid-col-12">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h2 class="card-title">Assistente Docente AI</h2>
+                            <div class="card-actions">
+                                <button class="btn btn-sm btn-outline" id="clearChat">
+                                    <i class="fas fa-trash-alt btn-icon"></i> Pulisci Chat
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="d-flex" style="height: 600px;">
+                                <div class="chat-container">
+                                    <div class="chat-messages" id="chatMessages">
+                                        <div class="message bot-message">
+                                            <p>Ciao! Sono il tuo assistente docente. Posso aiutarti con domande su didattica, metodologie, gestione della classe e molto altro. Come posso esserti utile oggi?</p>
+                                        </div>
+                                    </div>
+                                    <div class="chat-input-container">
+                                        <textarea class="chat-input" id="chatInput" placeholder="Scrivi la tua domanda qui..." rows="1"></textarea>
+                                        <button class="send-button" id="sendMessage">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="suggestions-sidebar" id="suggestionsSidebar">
+                                    <div class="suggestions-title">Suggerimenti per l'uso</div>
+                                    <div class="suggestion-chips" id="suggestionChips">
+                                        <div class="suggestion-chip">Come posso differenziare le attività per alunni con BES?</div>
+                                        <div class="suggestion-chip">Quali strategie per gestire una classe difficile?</div>
+                                        <div class="suggestion-chip">Come strutturare una lezione efficace?</div>
+                                        <div class="suggestion-chip">Idee per valutazione formativa in matematica</div>
+                                        <div class="suggestion-chip">Come comunicare con genitori problematici?</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Mobile menu toggle
+            $('.mobile-menu-toggle').click(function() {
+                $('.sidebar').toggleClass('open');
+            });
+            
+            // Sidebar collapse
+            $('.sidebar-collapse').click(function() {
+                $('.app-container').toggleClass('sidebar-collapsed');
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            $(document).on('click touchstart', function(e) {
+                if ($(window).width() < 768) {
+                    if (!$(e.target).closest('.sidebar').length && !$(e.target).closest('.mobile-menu-toggle').length) {
+                        $('.sidebar').removeClass('open');
+                    }
+                }
+            });
+            
+            // Auto-resize textarea
+            function autoResizeTextarea() {
+                const textarea = document.getElementById('chatInput');
+                textarea.style.height = 'auto';
+                textarea.style.height = (textarea.scrollHeight) + 'px';
+                
+                // Limit to 5 rows
+                const lineHeight = parseInt(getComputedStyle(textarea).lineHeight);
+                const maxHeight = lineHeight * 5;
+                if (textarea.scrollHeight > maxHeight) {
+                    textarea.style.height = maxHeight + 'px';
+                    textarea.style.overflowY = 'auto';
+                } else {
+                    textarea.style.overflowY = 'hidden';
+                }
+            }
+            
+            $('#chatInput').on('input', autoResizeTextarea);
+            
+            // Send message on button click
+            $('#sendMessage').click(sendMessage);
+            
+            // Send message on Enter (but allow Shift+Enter for new line)
+            $('#chatInput').keydown(function(e) {
+                if (e.keyCode === 13 && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Click on suggestion chip
+            $('.suggestion-chip').click(function() {
+                const text = $(this).text();
+                $('#chatInput').val(text);
+                autoResizeTextarea();
+                sendMessage();
+            });
+            
+            // Clear chat
+            $('#clearChat').click(function() {
+                if (confirm('Sei sicuro di voler cancellare tutta la conversazione?')) {
+                    $('#chatMessages').html(`
+                        <div class="message bot-message">
+                            <p>Ciao! Sono il tuo assistente docente. Posso aiutarti con domande su didattica, metodologie, gestione della classe e molto altro. Come posso esserti utile oggi?</p>
+                        </div>
+                    `);
+                    
+                    // Reset suggestions
+                    $('#suggestionChips').html(`
+                        <div class="suggestion-chip">Come posso differenziare le attività per alunni con BES?</div>
+                        <div class="suggestion-chip">Quali strategie per gestire una classe difficile?</div>
+                        <div class="suggestion-chip">Come strutturare una lezione efficace?</div>
+                        <div class="suggestion-chip">Idee per valutazione formativa in matematica</div>
+                        <div class="suggestion-chip">Come comunicare con genitori problematici?</div>
+                    `);
+                    
+                    // Reattach click event
+                    $('.suggestion-chip').click(function() {
+                        const text = $(this).text();
+                        $('#chatInput').val(text);
+                        autoResizeTextarea();
+                        sendMessage();
+                    });
+                }
+            });
+            
+            // Toggle suggestions sidebar on mobile
+            $('.suggestions-toggle').click(function() {
+                $('#suggestionsSidebar').toggleClass('open');
+            });
+            
+            // Function to send message
+            function sendMessage() {
+                const message = $('#chatInput').val().trim();
+                if (message === '') return;
+                
+                // Add user message to chat
+                $('#chatMessages').append(`
+                    <div class="message user-message">
+                        <p>${escapeHtml(message)}</p>
+                    </div>
+                `);
+                
+                // Clear input
+                $('#chatInput').val('');
+                autoResizeTextarea();
+                
+                // Scroll to bottom
+                scrollToBottom();
+                
+                // Show typing indicator
+                $('#chatMessages').append(`
+                    <div class="typing-indicator" id="typingIndicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `);
+                scrollToBottom();
+                
+                // Send to server
+                $.ajax({
+                    url: '/chatbot_query',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ query: message }),
+                    success: function(response) {
+                        // Remove typing indicator
+                        $('#typingIndicator').remove();
+                        
+                        // Add bot response
+                        $('#chatMessages').append(`
+                            <div class="message bot-message">
+                                <p>${formatResponse(response.response)}</p>
+                            </div>
+                        `);
+                        
+                        // Update suggestions
+                        if (response.suggestions && response.suggestions.length > 0) {
+                            $('#suggestionChips').empty();
+                            response.suggestions.forEach(function(suggestion) {
+                                $('#suggestionChips').append(`
+                                    <div class="suggestion-chip">${escapeHtml(suggestion)}</div>
+                                `);
+                            });
+                            
+                            // Reattach click event
+                            $('.suggestion-chip').click(function() {
+                                const text = $(this).text();
+                                $('#chatInput').val(text);
+                                autoResizeTextarea();
+                                sendMessage();
+                            });
+                        }
+                        
+                        // Scroll to bottom
+                        scrollToBottom();
+                    },
+                    error: function() {
+                        // Remove typing indicator
+                        $('#typingIndicator').remove();
+                        
+                        // Show error message
+                        $('#chatMessages').append(`
+                            <div class="message bot-message">
+                                <p>Mi dispiace, si è verificato un errore durante l'elaborazione della tua richiesta. Riprova più tardi.</p>
+                            </div>
+                        `);
+                        
+                        // Scroll to bottom
+                        scrollToBottom();
+                    }
+                });
+            }
+            
+            // Helper function to scroll chat to bottom
+            function scrollToBottom() {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Helper function to escape HTML
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Helper function to format response (convert line breaks to <br>)
+            function formatResponse(text) {
+                // Replace URLs with links
+                text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+                
+                // Replace line breaks with <br>
+                text = text.replace(/\n/g, '<br>');
+                
+                return text;
+            }
+            
+            // Initial scroll to bottom
+            scrollToBottom();
+        });
+    </script>
+</body>
+</html>

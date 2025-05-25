@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTools - Valutazione RIZA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stockwise.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="logo-text">EduTools</div>
+                </div>
+                <div class="sidebar-collapse">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+            </div>
+            <div class="sidebar-content">
+                <div class="menu-section">
+                    <div class="menu-section-title">MAIN MENU</div>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="{{ url_for('home') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-th-large"></i>
+                                </div>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('chatbot') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-comment-dots"></i>
+                                </div>
+                                Assistente Docente
+                            </a>
+                        </li>
+                        <li class="menu-item active">
+                            <a href="{{ url_for('valutazione') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                                Valutazione RIZA
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('view_observations') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                Visualizza Osservazioni
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                {% if session.get('user_role') == 'admin' %}
+                <div class="menu-section">
+                    <div class="menu-section-title">AMMINISTRAZIONE</div>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="{{ url_for('admin_dashboard') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                Dashboard Admin
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('admin_users') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                Gestione Utenti
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('admin_conversations') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                Monitoraggio Conversazioni
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">SUPPORTO</div>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="#">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                Guida
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                Supporto
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="header-search">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="Cerca osservazioni, allievi o classi...">
+                    <div class="search-shortcut">/</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="header-icon">
+                    <i class="far fa-star"></i>
+                </div>
+                <div class="header-icon">
+                    <i class="far fa-bell"></i>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <img src="https://ui-avatars.com/api/?name={{ session.get('user_name', 'User') }}&background=0052FF&color=fff" alt="User Avatar">
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ session.get('user_name', 'User') }}</div>
+                        <div class="user-email">{{ session.get('user_email', 'user@example.com') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="dashboard-grid">
+                <div class="grid-col-8">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h2 class="card-title">Nuova Osservazione</h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="observationForm" action="{{ url_for('valutazione') }}" method="post">
+                                <div class="form-section">
+                                    <h3 class="section-title">Informazioni Generali</h3>
+                                    <div class="form-row">
+                                        <div class="form-col">
+                                            <div class="form-group">
+                                                <label class="form-label" for="allievo">Allievo</label>
+                                                <input type="text" class="form-control" id="allievo" name="allievo" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-col">
+                                            <div class="form-group">
+                                                <label class="form-label" for="classe">Classe</label>
+                                                <input type="text" class="form-control" id="classe" name="classe" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-col">
+                                            <div class="form-group">
+                                                <label class="form-label" for="disciplina">Disciplina</label>
+                                                <select class="form-control" id="disciplina" name="disciplina" required>
+                                                    <option value="">Seleziona disciplina</option>
+                                                    {% for disciplina in discipline %}
+                                                    <option value="{{ disciplina }}">{{ disciplina }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-col">
+                                            <div class="form-group">
+                                                <label class="form-label" for="data">Data</label>
+                                                <input type="date" class="form-control" id="data" name="data" value="{{ today }}" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3 class="section-title">Osservazione</h3>
+                                    <div class="form-group">
+                                        <label class="form-label" for="situazione">Situazione osservata</label>
+                                        <textarea class="form-control" id="situazione" name="situazione" rows="2" placeholder="Descrivi brevemente il contesto in cui è avvenuta l'osservazione..." required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="osservazione">Osservazione dettagliata</label>
+                                        <textarea class="form-control" id="osservazione" name="osservazione" rows="5" placeholder="Descrivi in dettaglio ciò che hai osservato..." required></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3 class="section-title">Classificazione RIZA</h3>
+                                    <div class="form-row">
+                                        <div class="form-col">
+                                            <div class="form-group">
+                                                <label class="form-label" for="dimensione">Dimensione</label>
+                                                <select class="form-control" id="dimensione" name="dimensione" required>
+                                                    <option value="">Seleziona dimensione</option>
+                                                    {% for dimensione in dimensioni %}
+                                                    <option value="{{ dimensione }}">{{ dimensione }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-col">
+                                            <div class="form-group">
+                                                <label class="form-label" for="processo">Processo</label>
+                                                <select class="form-control" id="processo" name="processo" required disabled>
+                                                    <option value="">Seleziona prima una dimensione</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-col">
+                                            <div class="form-group">
+                                                <label class="form-label" for="livello">Livello</label>
+                                                <select class="form-control" id="livello" name="livello" required disabled>
+                                                    <option value="">Seleziona prima un processo</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-secondary" id="resetForm">
+                                        <i class="fas fa-redo btn-icon"></i> Reset
+                                    </button>
+                                    <button type="button" class="btn btn-primary" id="analyzeBtn">
+                                        <i class="fas fa-magic btn-icon"></i> Analizza con AI
+                                    </button>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save btn-icon"></i> Salva Osservazione
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid-col-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h2 class="card-title">Suggerimenti AI</h2>
+                            <div class="card-actions">
+                                <button class="btn btn-sm btn-outline" id="refreshSuggestions">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="aiSuggestions">
+                                <div class="placeholder-content">
+                                    <div class="placeholder-icon">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <p>Inserisci un'osservazione e clicca su "Analizza con AI" per ricevere suggerimenti sulla classificazione RIZA.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Descrittore RIZA</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="descrittoreContainer">
+                                <div class="placeholder-content">
+                                    <div class="placeholder-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <p>Seleziona dimensione, processo e livello per visualizzare il descrittore RIZA corrispondente.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal-backdrop" id="loadingModal" style="display: none;">
+        <div class="modal modal-sm">
+            <div class="modal-body text-center p-4">
+                <div class="loading-spinner mb-3">
+                    <i class="fas fa-spinner fa-spin fa-3x"></i>
+                </div>
+                <h3 class="mb-2">Analisi in corso</h3>
+                <p class="text-muted">L'intelligenza artificiale sta analizzando la tua osservazione...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Mobile menu toggle
+            $('.mobile-menu-toggle').click(function() {
+                $('.sidebar').toggleClass('open');
+            });
+            
+            // Sidebar collapse
+            $('.sidebar-collapse').click(function() {
+                $('.app-container').toggleClass('sidebar-collapsed');
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            $(document).on('click touchstart', function(e) {
+                if ($(window).width() < 768) {
+                    if (!$(e.target).closest('.sidebar').length && !$(e.target).closest('.mobile-menu-toggle').length) {
+                        $('.sidebar').removeClass('open');
+                    }
+                }
+            });
+            
+            // Reset form
+            $('#resetForm').click(function() {
+                if (confirm('Sei sicuro di voler cancellare tutti i dati inseriti?')) {
+                    $('#observationForm')[0].reset();
+                    $('#processo').prop('disabled', true).html('<option value="">Seleziona prima una dimensione</option>');
+                    $('#livello').prop('disabled', true).html('<option value="">Seleziona prima un processo</option>');
+                    
+                    // Reset AI suggestions
+                    $('#aiSuggestions').html(`
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <p>Inserisci un'osservazione e clicca su "Analizza con AI" per ricevere suggerimenti sulla classificazione RIZA.</p>
+                        </div>
+                    `);
+                    
+                    // Reset descrittore
+                    $('#descrittoreContainer').html(`
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <p>Seleziona dimensione, processo e livello per visualizzare il descrittore RIZA corrispondente.</p>
+                        </div>
+                    `);
+                }
+            });
+            
+            // Dimensione change
+            $('#dimensione').change(function() {
+                const dimensione = $(this).val();
+                if (dimensione) {
+                    // Show loading in processo dropdown
+                    $('#processo').html('<option value="">Caricamento...</option>');
+                    
+                    // Fetch processi
+                    $.ajax({
+                        url: '/get_processi/' + dimensione,
+                        type: 'GET',
+                        success: function(response) {
+                            if (response.success) {
+                                let options = '<option value="">Seleziona processo</option>';
+                                response.processi.forEach(function(processo) {
+                                    options += `<option value="${processo}">${processo}</option>`;
+                                });
+                                $('#processo').html(options).prop('disabled', false);
+                            } else {
+                                $('#processo').html('<option value="">Errore nel caricamento</option>');
+                            }
+                        },
+                        error: function() {
+                            $('#processo').html('<option value="">Errore nel caricamento</option>');
+                        }
+                    });
+                    
+                    // Reset livello
+                    $('#livello').prop('disabled', true).html('<option value="">Seleziona prima un processo</option>');
+                    
+                    // Reset descrittore
+                    $('#descrittoreContainer').html(`
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <p>Seleziona processo e livello per visualizzare il descrittore RIZA.</p>
+                        </div>
+                    `);
+                } else {
+                    // Reset processo and livello
+                    $('#processo').prop('disabled', true).html('<option value="">Seleziona prima una dimensione</option>');
+                    $('#livello').prop('disabled', true).html('<option value="">Seleziona prima un processo</option>');
+                    
+                    // Reset descrittore
+                    $('#descrittoreContainer').html(`
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <p>Seleziona dimensione, processo e livello per visualizzare il descrittore RIZA corrispondente.</p>
+                        </div>
+                    `);
+                }
+            });
+            
+            // Processo change
+            $('#processo').change(function() {
+                const dimensione = $('#dimensione').val();
+                const processo = $(this).val();
+                
+                if (dimensione && processo) {
+                    // Show loading in livello dropdown
+                    $('#livello').html('<option value="">Caricamento...</option>');
+                    
+                    // Fetch livelli
+                    $.ajax({
+                        url: '/get_livelli/' + dimensione + '/' + processo,
+                        type: 'GET',
+                        success: function(response) {
+                            if (response.success) {
+                                let options = '<option value="">Seleziona livello</option>';
+                                response.livelli.forEach(function(livello) {
+                                    options += `<option value="${livello}">${livello}</option>`;
+                                });
+                                $('#livello').html(options).prop('disabled', false);
+                            } else {
+                                $('#livello').html('<option value="">Errore nel caricamento</option>');
+                            }
+                        },
+                        error: function() {
+                            $('#livello').html('<option value="">Errore nel caricamento</option>');
+                        }
+                    });
+                    
+                    // Reset descrittore
+                    $('#descrittoreContainer').html(`
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <p>Seleziona un livello per visualizzare il descrittore RIZA.</p>
+                        </div>
+                    `);
+                } else {
+                    // Reset livello
+                    $('#livello').prop('disabled', true).html('<option value="">Seleziona prima un processo</option>');
+                    
+                    // Reset descrittore
+                    $('#descrittoreContainer').html(`
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <p>Seleziona dimensione, processo e livello per visualizzare il descrittore RIZA corrispondente.</p>
+                        </div>
+                    `);
+                }
+            });
+            
+            // Livello change
+            $('#livello').change(function() {
+                const dimensione = $('#dimensione').val();
+                const processo = $('#processo').val();
+                const livello = $(this).val();
+                
+                if (dimensione && processo && livello) {
+                    // Show loading in descrittore
+                    $('#descrittoreContainer').html(`
+                        <div class="loading-spinner text-center p-4">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Caricamento descrittore...</p>
+                        </div>
+                    `);
+                    
+                    // Fetch descrittore
+                    $.ajax({
+                        url: '/get_descrittore/' + dimensione + '/' + processo + '/' + livello,
+                        type: 'GET',
+                        success: function(response) {
+                            if (response.success && response.descrittore) {
+                                $('#descrittoreContainer').html(`
+                                    <div class="descrittore-content">
+                                        <div class="descrittore-header">
+                                            <div class="badge badge-${getLivelloBadgeClass(livello)}">${livello}</div>
+                                        </div>
+                                        <div class="descrittore-text">
+                                            ${response.descrittore}
+                                        </div>
+                                    </div>
+                                `);
+                            } else {
+                                $('#descrittoreContainer').html(`
+                                    <div class="alert alert-warning">
+                                        <div class="alert-icon">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div class="alert-content">
+                                            <div class="alert-title">Descrittore non trovato</div>
+                                            <div class="alert-message">Non è stato possibile trovare un descrittore per la combinazione selezionata.</div>
+                                        </div>
+                                    </div>
+                                `);
+                            }
+                        },
+                        error: function() {
+                            $('#descrittoreContainer').html(`
+                                <div class="alert alert-danger">
+                                    <div class="alert-icon">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                    </div>
+                                    <div class="alert-content">
+                                        <div class="alert-title">Errore</div>
+                                        <div class="alert-message">Si è verificato un errore durante il caricamento del descrittore. Riprova più tardi.</div>
+                                    </div>
+                                </div>
+                            `);
+                        }
+                    });
+                } else {
+                    // Reset descrittore
+                    $('#descrittoreContainer').html(`
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <p>Seleziona dimensione, processo e livello per visualizzare il descrittore RIZA corrispondente.</p>
+                        </div>
+                    `);
+                }
+            });
+            
+            // Analyze with AI
+            $('#analyzeBtn').click(function() {
+                const osservazione = $('#osservazione').val().trim();
+                const situazione = $('#situazione').val().trim();
+                
+                if (!osservazione) {
+                    alert('Inserisci un\'osservazione prima di procedere con l\'analisi.');
+                    return;
+                }
+                
+                // Show loading modal
+                $('#loadingModal').fadeIn(200);
+                
+                // Send to server
+                $.ajax({
+                    url: '/analyze_observation',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        osservazione: osservazione,
+                        situazione: situazione
+                    }),
+                    success: function(response) {
+                        // Hide loading modal
+                        $('#loadingModal').fadeOut(200);
+                        
+                        if (response.success) {
+                            // Update AI suggestions
+                            $('#aiSuggestions').html(`
+                                <div class="ai-suggestions-content">
+                                    <div class="suggestion-item">
+                                        <div class="suggestion-header">
+                                            <div class="suggestion-title">Dimensione</div>
+                                            <div class="confidence-badge high">Alta Confidenza</div>
+                                        </div>
+                                        <div class="suggestion-value">${response.dimensione}</div>
+                                        <button class="btn btn-sm btn-outline apply-suggestion" data-target="dimensione" data-value="${response.dimensione}">
+                                            <i class="fas fa-check btn-icon"></i> Applica
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="suggestion-item">
+                                        <div class="suggestion-header">
+                                            <div class="suggestion-title">Processo</div>
+                                            <div class="confidence-badge ${response.processo_confidence}">
+                                                ${response.processo_confidence === 'high' ? 'Alta' : response.processo_confidence === 'medium' ? 'Media' : 'Bassa'} Confidenza
+                                            </div>
+                                        </div>
+                                        <div class="suggestion-value">${response.processo}</div>
+                                        <button class="btn btn-sm btn-outline apply-suggestion" data-target="processo" data-value="${response.processo}" data-dimensione="${response.dimensione}">
+                                            <i class="fas fa-check btn-icon"></i> Applica
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="suggestion-item">
+                                        <div class="suggestion-header">
+                                            <div class="suggestion-title">Livello</div>
+                                            <div class="confidence-badge ${response.livello_confidence}">
+                                                ${response.livello_confidence === 'high' ? 'Alta' : response.livello_confidence === 'medium' ? 'Media' : 'Bassa'} Confidenza
+                                            </div>
+                                        </div>
+                                        <div class="suggestion-value">${response.livello}</div>
+                                        <button class="btn btn-sm btn-outline apply-suggestion" data-target="livello" data-value="${response.livello}" data-dimensione="${response.dimensione}" data-processo="${response.processo}">
+                                            <i class="fas fa-check btn-icon"></i> Applica
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="suggestion-item">
+                                        <div class="suggestion-header">
+                                            <div class="suggestion-title">Spiegazione AI</div>
+                                        </div>
+                                        <div class="suggestion-explanation">
+                                            ${response.explanation}
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                            
+                            // Attach click events to apply buttons
+                            $('.apply-suggestion').click(function() {
+                                const target = $(this).data('target');
+                                const value = $(this).data('value');
+                                
+                                if (target === 'dimensione') {
+                                    $('#dimensione').val(value).trigger('change');
+                                } else if (target === 'processo') {
+                                    const dimensione = $(this).data('dimensione');
+                                    
+                                    // First set dimensione if needed
+                                    if ($('#dimensione').val() !== dimensione) {
+                                        $('#dimensione').val(dimensione).trigger('change');
+                                        
+                                        // Wait for processi to load
+                                        setTimeout(function() {
+                                            $('#processo').val(value).trigger('change');
+                                        }, 500);
+                                    } else {
+                                        $('#processo').val(value).trigger('change');
+                                    }
+                                } else if (target === 'livello') {
+                                    const dimensione = $(this).data('dimensione');
+                                    const processo = $(this).data('processo');
+                                    
+                                    // First set dimensione and processo if needed
+                                    if ($('#dimensione').val() !== dimensione) {
+                                        $('#dimensione').val(dimensione).trigger('change');
+                                        
+                                        // Wait for processi to load
+                                        setTimeout(function() {
+                                            $('#processo').val(processo).trigger('change');
+                                            
+                                            // Wait for livelli to load
+                                            setTimeout(function() {
+                                                $('#livello').val(value).trigger('change');
+                                            }, 500);
+                                        }, 500);
+                                    } else if ($('#processo').val() !== processo) {
+                                        $('#processo').val(processo).trigger('change');
+                                        
+                                        // Wait for livelli to load
+                                        setTimeout(function() {
+                                            $('#livello').val(value).trigger('change');
+                                        }, 500);
+                                    } else {
+                                        $('#livello').val(value).trigger('change');
+                                    }
+                                }
+                            });
+                        } else {
+                            // Show error
+                            $('#aiSuggestions').html(`
+                                <div class="alert alert-warning">
+                                    <div class="alert-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="alert-content">
+                                        <div class="alert-title">Analisi non disponibile</div>
+                                        <div class="alert-message">${response.error || 'Non è stato possibile analizzare l\'osservazione. Riprova più tardi o inserisci manualmente la classificazione.'}</div>
+                                    </div>
+                                </div>
+                            `);
+                        }
+                    },
+                    error: function() {
+                        // Hide loading modal
+                        $('#loadingModal').fadeOut(200);
+                        
+                        // Show error
+                        $('#aiSuggestions').html(`
+                            <div class="alert alert-danger">
+                                <div class="alert-icon">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title">Errore</div>
+                                    <div class="alert-message">Si è verificato un errore durante l'analisi. Riprova più tardi o inserisci manualmente la classificazione.</div>
+                                </div>
+                            </div>
+                        `);
+                    }
+                });
+            });
+            
+            // Helper function to get badge class based on livello
+            function getLivelloBadgeClass(livello) {
+                switch (livello) {
+                    case 'Avanzato':
+                        return 'success';
+                    case 'Intermedio':
+                        return 'primary';
+                    case 'Base':
+                        return 'warning';
+                    case 'Iniziale':
+                        return 'neutral';
+                    default:
+                        return 'neutral';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

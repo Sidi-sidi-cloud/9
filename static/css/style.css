@@ -1,0 +1,69 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 500;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.suggestion-item:hover {
+    background-color: #f0f9ff;
+    border-left: 4px solid #0d6efd;
+}
+
+.suggestion-item.selected {
+    background-color: #e2f0fd;
+    border-left: 4px solid #0d6efd;
+}
+
+.similarity-badge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.dimension-badge {
+    background-color: #6610f2;
+}
+
+.process-badge {
+    background-color: #fd7e14;
+}
+
+.level-badge {
+    background-color: #20c997;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.table th {
+    background-color: #f8f9fa;
+}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTools - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stockwise.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="logo-text">EduTools</div>
+                </div>
+                <div class="sidebar-collapse">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+            </div>
+            <div class="sidebar-content">
+                <div class="menu-section">
+                    <div class="menu-section-title">MAIN MENU</div>
+                    <ul class="menu-items">
+                        <li class="menu-item {% if request.path == '/' %}active{% endif %}">
+                            <a href="{{ url_for('home') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-th-large"></i>
+                                </div>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="menu-item {% if request.path == '/chatbot' %}active{% endif %}">
+                            <a href="{{ url_for('chatbot') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-comment-dots"></i>
+                                </div>
+                                Assistente Docente
+                            </a>
+                        </li>
+                        <li class="menu-item {% if request.path == '/valutazione' %}active{% endif %}">
+                            <a href="{{ url_for('valutazione') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                                Valutazione RIZA
+                            </a>
+                        </li>
+                        <li class="menu-item {% if request.path == '/view_observations' %}active{% endif %}">
+                            <a href="{{ url_for('view_observations') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                Visualizza Osservazioni
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                {% if session.get('user_role') == 'admin' %}
+                <div class="menu-section">
+                    <div class="menu-section-title">AMMINISTRAZIONE</div>
+                    <ul class="menu-items">
+                        <li class="menu-item {% if request.path == '/admin/dashboard' %}active{% endif %}">
+                            <a href="{{ url_for('admin_dashboard') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                Dashboard Admin
+                            </a>
+                        </li>
+                        <li class="menu-item {% if request.path == '/admin/users' %}active{% endif %}">
+                            <a href="{{ url_for('admin_users') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                Gestione Utenti
+                            </a>
+                        </li>
+                        <li class="menu-item {% if request.path == '/admin/conversations' %}active{% endif %}">
+                            <a href="{{ url_for('admin_conversations') }}">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                Monitoraggio Conversazioni
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">SUPPORTO</div>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="#">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                Guida
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                Supporto
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="header-search">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="Cerca osservazioni, allievi o classi...">
+                    <div class="search-shortcut">/</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="header-icon">
+                    <i class="far fa-star"></i>
+                </div>
+                <div class="header-icon">
+                    <i class="far fa-bell"></i>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <img src="https://ui-avatars.com/api/?name={{ session.get('user_name', 'User') }}&background=0052FF&color=fff" alt="User Avatar">
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ session.get('user_name', 'User') }}</div>
+                        <div class="user-email">{{ session.get('user_email', 'user@example.com') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Mobile menu toggle
+            $('.mobile-menu-toggle').click(function() {
+                $('.sidebar').toggleClass('open');
+            });
+            
+            // Sidebar collapse
+            $('.sidebar-collapse').click(function() {
+                $('.app-container').toggleClass('sidebar-collapsed');
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            $(document).on('click touchstart', function(e) {
+                if ($(window).width() < 768) {
+                    if (!$(e.target).closest('.sidebar').length && !$(e.target).closest('.mobile-menu-toggle').length) {
+                        $('.sidebar').removeClass('open');
+                    }
+                }
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

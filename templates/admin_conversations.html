@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTools - Conversazioni</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/professional.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Menu laterale -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>EduTools</h1>
+                <button class="sidebar-toggle" id="sidebarClose">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <div class="menu-section">
+                    <h3 class="menu-section-title">AMMINISTRAZIONE</h3>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="/admin/dashboard">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="/admin/users">
+                                <i class="bi bi-people"></i>
+                                <span>Gestione Utenti</span>
+                            </a>
+                        </li>
+                        <li class="menu-item active">
+                            <a href="/admin/conversations">
+                                <i class="bi bi-chat-left-text"></i>
+                                <span>Conversazioni</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="/admin/analytics">
+                                <i class="bi bi-graph-up"></i>
+                                <span>Analisi Utilizzo</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="/admin/settings">
+                                <i class="bi bi-gear"></i>
+                                <span>Impostazioni</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="menu-section">
+                    <h3 class="menu-section-title">NAVIGAZIONE</h3>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="/">
+                                <i class="bi bi-house-door"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="/chatbot">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Assistente Docente</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="/valutazione">
+                                <i class="bi bi-clipboard-check"></i>
+                                <span>Valutazione RIZA</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Contenuto principale -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle" id="sidebarToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h1 class="header-title">Conversazioni</h1>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <i class="bi bi-search"></i>
+                        <input type="text" placeholder="Cerca conversazioni...">
+                    </div>
+                    
+                    <div class="user-menu">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="Avatar" class="user-avatar">
+                        <span class="user-name">Amministratore</span>
+                        <i class="bi bi-chevron-down dropdown-toggle"></i>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="page-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Elenco Conversazioni</h2>
+                        <div class="card-actions">
+                            <button class="btn btn-primary" id="exportBtn">
+                                <i class="bi bi-download"></i> Esporta Dati
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="userFilter" class="form-label">Utente</label>
+                                        <select id="userFilter" class="form-control">
+                                            <option value="">Tutti gli utenti</option>
+                                            <option value="1">Marco Rossi</option>
+                                            <option value="2">Laura Bianchi</option>
+                                            <option value="3">Giovanni Verdi</option>
+                                            <option value="5">Antonio Russo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="toolFilter" class="form-label">Strumento</label>
+                                        <select id="toolFilter" class="form-control">
+                                            <option value="">Tutti gli strumenti</option>
+                                            <option value="assistente">Assistente Docente</option>
+                                            <option value="riza">Valutazione RIZA</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="dateFilter" class="form-label">Data</label>
+                                        <select id="dateFilter" class="form-control">
+                                            <option value="">Tutte le date</option>
+                                            <option value="today">Oggi</option>
+                                            <option value="week">Questa settimana</option>
+                                            <option value="month">Questo mese</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button class="btn btn-primary btn-block" id="applyFilters">Applica Filtri</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-container mt-4">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Utente</th>
+                                        <th>Strumento</th>
+                                        <th>Messaggio</th>
+                                        <th>Data</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1001</td>
+                                        <td>Marco Rossi</td>
+                                        <td><span class="badge badge-info">Assistente</span></td>
+                                        <td>Come posso creare un'attività didattica coinvolgente sulla storia romana?</td>
+                                        <td>Oggi, 14:32</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-icon view" title="Visualizza"><i class="bi bi-eye"></i></button>
+                                                <button class="btn-icon delete" title="Elimina"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>1002</td>
+                                        <td>Laura Bianchi</td>
+                                        <td><span class="badge badge-success">RIZA</span></td>
+                                        <td>L'alunno ha dimostrato capacità di analisi critica durante la discussione...</td>
+                                        <td>Oggi, 11:15</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-icon view" title="Visualizza"><i class="bi bi-eye"></i></button>
+                                                <button class="btn-icon delete" title="Elimina"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>1003</td>
+                                        <td>Giovanni Verdi</td>
+                                        <td><span class="badge badge-info">Assistente</span></td>
+                                        <td>Quali strategie posso utilizzare per gestire una classe particolarmente vivace?</td>
+                                        <td>Ieri, 16:45</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-icon view" title="Visualizza"><i class="bi bi-eye"></i></button>
+                                                <button class="btn-icon delete" title="Elimina"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>1004</td>
+                                        <td>Antonio Russo</td>
+                                        <td><span class="badge badge-success">RIZA</span></td>
+                                        <td>Durante l'attività di gruppo, lo studente ha mostrato capacità di coordinamento...</td>
+                                        <td>Oggi, 09:20</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-icon view" title="Visualizza"><i class="bi bi-eye"></i></button>
+                                                <button class="btn-icon delete" title="Elimina"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>1005</td>
+                                        <td>Marco Rossi</td>
+                                        <td><span class="badge badge-info">Assistente</span></td>
+                                        <td>Come posso differenziare le attività per studenti con diversi stili di apprendimento?</td>
+                                        <td>Ieri, 10:05</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-icon view" title="Visualizza"><i class="bi bi-eye"></i></button>
+                                                <button class="btn-icon delete" title="Elimina"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>1006</td>
+                                        <td>Laura Bianchi</td>
+                                        <td><span class="badge badge-info">Assistente</span></td>
+                                        <td>Quali tecnologie posso utilizzare per rendere più interattive le mie lezioni?</td>
+                                        <td>3 giorni fa</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-icon view" title="Visualizza"><i class="bi bi-eye"></i></button>
+                                                <button class="btn-icon delete" title="Elimina"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="pagination-container">
+                            <div class="pagination">
+                                <div class="pagination-item">
+                                    <i class="bi bi-chevron-left"></i>
+                                </div>
+                                <div class="pagination-item active">1</div>
+                                <div class="pagination-item">2</div>
+                                <div class="pagination-item">3</div>
+                                <div class="pagination-item">
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="items-per-page">
+                                <span>Righe per pagina:</span>
+                                <select class="form-control form-control-sm">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="footer">
+                <div class="container">
+                    <span>EduTools © 2025 - Strumenti per docenti basati su intelligenza artificiale</span>
+                </div>
+            </footer>
+        </main>
+    </div>
+    
+    <!-- Overlay per menu mobile -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Modal per visualizzare conversazione -->
+    <div class="modal" id="conversationModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Dettaglio Conversazione</h3>
+                    <button type="button" class="modal-close" id="closeModal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="conversation-details">
+                        <div class="conversation-info">
+                            <div class="info-item">
+                                <span class="info-label">Utente:</span>
+                                <span class="info-value" id="conversationUser">Marco Rossi</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Strumento:</span>
+                                <span class="info-value" id="conversationTool">Assistente Docente</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Data:</span>
+                                <span class="info-value" id="conversationDate">Oggi, 14:32</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Durata:</span>
+                                <span class="info-value" id="conversationDuration">15 minuti</span>
+                            </div>
+                        </div>
+                        
+                        <div class="conversation-messages" id="conversationMessages">
+                            <div class="message user-message">
+                                <div class="message-header">
+                                    <span class="message-sender">Marco Rossi</span>
+                                    <span class="message-time">14:32</span>
+                                </div>
+                                <div class="message-content">
+                                    <p>Come posso creare un'attività didattica coinvolgente sulla storia romana?</p>
+                                </div>
+                            </div>
+                            
+                            <div class="message bot-message">
+                                <div class="message-header">
+                                    <span class="message-sender">Assistente</span>
+                                    <span class="message-time">14:32</span>
+                                </div>
+                                <div class="message-content">
+                                    <p>Ecco alcune idee per creare un'attività didattica coinvolgente sulla storia romana:</p>
+                                    <ol>
+                                        <li><strong>Simulazione di un dibattito al Senato romano</strong>: Assegna a ciascuno studente il ruolo di un senatore romano e chiedi loro di dibattere su una questione storica rilevante (es. l'espansione dell'impero, le riforme agrarie, ecc.).</li>
+                                        <li><strong>Progettazione di una città romana</strong>: Chiedi agli studenti di progettare una città romana con tutti gli elementi caratteristici (foro, terme, anfiteatro, acquedotto, ecc.) spiegando la funzione di ciascun edificio.</li>
+                                        <li><strong>Gioco di ruolo "Un giorno nella Roma antica"</strong>: Gli studenti interpretano diversi ruoli sociali (patrizio, plebeo, schiavo, mercante, soldato) e devono descrivere/rappresentare la loro giornata tipo.</li>
+                                        <li><strong>Processo storico simulato</strong>: Organizza un processo a un personaggio controverso della storia romana (es. Nerone, Catilina) con accusa, difesa e giuria.</li>
+                                        <li><strong>Creazione di un notiziario romano</strong>: Gli studenti creano un "telegiornale" che riporta gli eventi principali di un periodo storico specifico.</li>
+                                    </ol>
+                                    <p>Vuoi che approfondisca una di queste idee in particolare?</p>
+                                </div>
+                            </div>
+                            
+                            <div class="message user-message">
+                                <div class="message-header">
+                                    <span class="message-sender">Marco Rossi</span>
+                                    <span class="message-time">14:35</span>
+                                </div>
+                                <div class="message-content">
+                                    <p>Mi piace molto l'idea del processo storico simulato. Puoi darmi più dettagli su come strutturarlo per una classe di terza media?</p>
+                                </div>
+                            </div>
+                            
+                            <div class="message bot-message">
+                                <div class="message-header">
+                                    <span class="message-sender">Assistente</span>
+                                    <span class="message-time">14:35</span>
+                                </div>
+                                <div class="message-content">
+                                    <p>Ecco come potresti strutturare un processo storico simulato per una classe di terza media:</p>
+                                    <h4>Preparazione (1-2 lezioni):</h4>
+                                    <ul>
+                                        <li>Scegli un personaggio controverso come Nerone o Giulio Cesare</li>
+                                        <li>Dividi la classe in gruppi: accusa, difesa, giudici, testimoni storici, giornalisti</li>
+                                        <li>Fornisci materiali di ricerca adatti all'età: schede informative, estratti semplificati di fonti storiche, video</li>
+                                        <li>Ogni gruppo prepara la propria parte con una guida strutturata di domande</li>
+                                    </ul>
+                                    <h4>Svolgimento (1-2 lezioni):</h4>
+                                    <ul>
+                                        <li>Allestisci l'aula come un tribunale</li>
+                                        <li>Stabilisci regole chiare per gli interventi (2-3 minuti ciascuno)</li>
+                                        <li>Segui una struttura semplificata: apertura, testimonianze, controinterrogatorio, arringhe finali</li>
+                                        <li>I "giornalisti" prendono appunti per creare un articolo finale</li>
+                                    </ul>
+                                    <h4>Valutazione e riflessione:</h4>
+                                    <ul>
+                                        <li>I giudici emettono un verdetto motivato</li>
+                                        <li>Discussione finale: cosa abbiamo imparato sul personaggio e sul periodo storico?</li>
+                                        <li>Confronto con il giudizio degli storici moderni</li>
+                                    </ul>
+                                    <p>Questo formato permette di sviluppare competenze di ricerca, argomentazione, pensiero critico e lavoro di gruppo, mantenendo alto l'interesse grazie all'elemento teatrale.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="closeConversationBtn">Chiudi</button>
+                    <button type="button" class="btn btn-primary" id="exportConversationBtn">Esporta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarClose = document.getElementById('sidebarClose');
+            const overlay = document.getElementById('overlay');
+            const conversationModal = document.getElementById('conversationModal');
+            const closeModal = document.getElementById('closeModal');
+            const closeConversationBtn = document.getElementById('closeConversationBtn');
+            
+            // Toggle sidebar on mobile
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                });
+            }
+            
+            // Close sidebar
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', function() {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                });
+            }
+            
+            // Close sidebar when clicking on overlay
+            if (overlay) {
+                overlay.addEventListener('click', function() {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                    conversationModal.style.display = 'none';
+                });
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            });
+            
+            // View conversation
+            document.querySelectorAll('.view').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Get conversation data from the row
+                    const row = this.closest('tr');
+                    const conversationId = row.querySelector('td:nth-child(1)').textContent;
+                    const userName = row.querySelector('td:nth-child(2)').textContent;
+                    const toolName = row.querySelector('td:nth-child(3) .badge').textContent;
+                    const date = row.querySelector('td:nth-child(5)').textContent;
+                    
+                    // Update modal with conversation data
+                    document.getElementById('conversationUser').textContent = userName;
+                    document.getElementById('conversationTool').textContent = toolName;
+                    document.getElementById('conversationDate').textContent = date;
+                    
+                    // Show modal
+                    conversationModal.style.display = 'block';
+                    overlay.classList.add('active');
+                });
+            });
+            
+            // Close conversation modal
+            if (closeModal) {
+                closeModal.addEventListener('click', function() {
+                    conversationModal.style.display = 'none';
+                    overlay.classList.remove('active');
+                });
+            }
+            
+            // Close conversation button
+            if (closeConversationBtn) {
+                closeConversationBtn.addEventListener('click', function() {
+                    conversationModal.style.display = 'none';
+                    overlay.classList.remove('active');
+                });
+            }
+            
+            // Delete conversation
+            document.querySelectorAll('.delete').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (confirm('Sei sicuro di voler eliminare questa conversazione?')) {
+                        // Here you would normally send the delete request to the server
+                        const row = this.closest('tr');
+                        const conversationId = row.querySelector('td:nth-child(1)').textContent;
+                        console.log('Deleting conversation:', conversationId);
+                        
+                        // Remove row from table
+                        row.remove();
+                        
+                        // Show success message
+                        alert('Conversazione eliminata con successo!');
+                    }
+                });
+            });
+            
+            // Export data
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    alert('Esportazione dati in corso...');
+                    // Here you would normally handle the export functionality
+                });
+            }
+            
+            // Export conversation
+            const exportConversationBtn = document.getElementById('exportConversationBtn');
+            if (exportConversationBtn) {
+                exportConversationBtn.addEventListener('click', function() {
+                    alert('Esportazione conversazione in corso...');
+                    // Here you would normally handle the export functionality
+                });
+            }
+        });
+    </script>
+</body>
+</html>

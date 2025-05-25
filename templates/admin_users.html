@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTools - Gestione Utenti</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>EduTools</h1>
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-section">
+                    <h3 class="menu-section-title">NAVIGAZIONE</h3>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="{{ url_for('home') }}">
+                                <i class="bi bi-house-door"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('chatbot') }}">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Assistente Docente</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('valutazione') }}">
+                                <i class="bi bi-clipboard-check"></i>
+                                <span>Valutazione RIZA</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('view_observations') }}">
+                                <i class="bi bi-list-ul"></i>
+                                <span>Visualizza Osservazioni</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="menu-section">
+                    <h3 class="menu-section-title">AMMINISTRAZIONE</h3>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="{{ url_for('admin_dashboard') }}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Dashboard Admin</span>
+                            </a>
+                        </li>
+                        <li class="menu-item active">
+                            <a href="{{ url_for('admin_users') }}">
+                                <i class="bi bi-people"></i>
+                                <span>Gestione Utenti</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('admin_conversations') }}">
+                                <i class="bi bi-chat-left-text"></i>
+                                <span>Conversazioni</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="menu-section">
+                    <h3 class="menu-section-title">ACCOUNT</h3>
+                    <ul class="menu-items">
+                        <li class="menu-item">
+                            <a href="#">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Profilo</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h2 class="header-title">Gestione Utenti</h2>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu">
+                        <img src="https://ui-avatars.com/api/?name={{ session.get('user_name', 'Admin') }}&background=4361ee&color=fff" alt="User Avatar" class="user-avatar">
+                        <span class="user-name">{{ session.get('user_name', 'Admin') }}</span>
+                        <i class="bi bi-chevron-down dropdown-toggle"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Utenti</h3>
+                        <div class="card-actions">
+                            <button type="button" id="add-user-btn" class="btn btn-primary">
+                                <i class="bi bi-person-plus"></i> Nuovo Utente
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters mb-4">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="filter-name" class="form-label">Nome</label>
+                                    <input type="text" id="filter-name" class="form-control" placeholder="Cerca per nome...">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="filter-role" class="form-label">Ruolo</label>
+                                    <select id="filter-role" class="form-control">
+                                        <option value="">Tutti</option>
+                                        <option value="docente">Docente</option>
+                                        <option value="coordinatore">Coordinatore</option>
+                                        <option value="admin">Amministratore</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="filter-status" class="form-label">Stato</label>
+                                    <select id="filter-status" class="form-control">
+                                        <option value="">Tutti</option>
+                                        <option value="attivo">Attivo</option>
+                                        <option value="inattivo">Inattivo</option>
+                                        <option value="sospeso">Sospeso</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" id="filter-btn" class="btn btn-primary">
+                                    <i class="bi bi-search"></i> Filtra
+                                </button>
+                                <button type="button" id="reset-filter-btn" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table class="data-table" id="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>Email</th>
+                                        <th>Ruolo</th>
+                                        <th>Stato</th>
+                                        <th>Data Creazione</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.id }}</td>
+                                        <td>{{ user.name }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            {% if user.role == 'admin' %}
+                                                <span class="badge badge-danger">Amministratore</span>
+                                            {% elif user.role == 'coordinatore' %}
+                                                <span class="badge badge-warning">Coordinatore</span>
+                                            {% else %}
+                                                <span class="badge badge-info">Docente</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.status == 'attivo' %}
+                                                <span class="badge badge-success">Attivo</span>
+                                            {% elif user.status == 'inattivo' %}
+                                                <span class="badge badge-secondary">Inattivo</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Sospeso</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.created_at }}</td>
+                                        <td class="action-buttons">
+                                            <button type="button" class="btn-icon edit edit-user-btn" data-id="{{ user.id }}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn-icon delete delete-user-btn" data-id="{{ user.id }}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div id="no-users" class="text-center p-4" style="display: none;">
+                            <i class="bi bi-search" style="font-size: 2rem; color: var(--gray-400);"></i>
+                            <p class="mt-2">Nessun utente trovato con i criteri di ricerca specificati.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="footer">
+                <p>&copy; 2025 EduTools - Tutti i diritti riservati</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Modal Nuovo/Modifica Utente -->
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="user-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="user-modal-title">Nuovo Utente</h3>
+                    <button type="button" class="modal-close" id="close-user-modal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="user-form">
+                        <input type="hidden" id="user-id">
+                        
+                        <div class="form-group">
+                            <label for="user-name" class="form-label">Nome Completo</label>
+                            <input type="text" id="user-name" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-email" class="form-label">Email</label>
+                            <input type="email" id="user-email" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-password" class="form-label">Password</label>
+                            <input type="password" id="user-password" class="form-control">
+                            <small class="form-text text-muted" id="password-help">Lascia vuoto per mantenere la password attuale.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-role" class="form-label">Ruolo</label>
+                            <select id="user-role" class="form-control" required>
+                                <option value="docente">Docente</option>
+                                <option value="coordinatore">Coordinatore</option>
+                                <option value="admin">Amministratore</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-status" class="form-label">Stato</label>
+                            <select id="user-status" class="form-control" required>
+                                <option value="attivo">Attivo</option>
+                                <option value="inattivo">Inattivo</option>
+                                <option value="sospeso">Sospeso</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-user-btn">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="save-user-btn">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Conferma Eliminazione -->
+    <div class="modal" id="delete-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Conferma Eliminazione</h3>
+                    <button type="button" class="modal-close" id="close-delete-modal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Sei sicuro di voler eliminare questo utente? Questa azione non può essere annullata.</p>
+                    <input type="hidden" id="delete-user-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-delete-btn">Annulla</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">Elimina</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            function toggleSidebar() {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+                document.body.classList.toggle('sidebar-open');
+            }
+            
+            mobileMenuToggle.addEventListener('click', toggleSidebar);
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.classList.remove('sidebar-open');
+                
+                // Chiudi anche i modal se aperti
+                userModal.style.display = 'none';
+                deleteModal.style.display = 'none';
+            });
+            
+            // Filtro utenti
+            const filterBtn = document.getElementById('filter-btn');
+            const resetFilterBtn = document.getElementById('reset-filter-btn');
+            const usersTable = document.getElementById('users-table');
+            const noUsers = document.getElementById('no-users');
+            
+            filterBtn.addEventListener('click', filterUsers);
+            resetFilterBtn.addEventListener('click', resetFilters);
+            
+            function filterUsers() {
+                const name = document.getElementById('filter-name').value.toLowerCase();
+                const role = document.getElementById('filter-role').value.toLowerCase();
+                const status = document.getElementById('filter-status').value.toLowerCase();
+                
+                const rows = usersTable.querySelectorAll('tbody tr');
+                let visibleCount = 0;
+                
+                rows.forEach(row => {
+                    const rowName = row.cells[1].textContent.toLowerCase();
+                    const rowRole = row.cells[3].textContent.toLowerCase();
+                    const rowStatus = row.cells[4].textContent.toLowerCase();
+                    
+                    const matchesName = !name || rowName.includes(name);
+                    const matchesRole = !role || rowRole.includes(role);
+                    const matchesStatus = !status || rowStatus.includes(status);
+                    
+                    const isVisible = matchesName && matchesRole && matchesStatus;
+                    
+                    row.style.display = isVisible ? '' : 'none';
+                    
+                    if (isVisible) {
+                        visibleCount++;
+                    }
+                });
+                
+                if (visibleCount === 0) {
+                    noUsers.style.display = 'block';
+                    usersTable.style.display = 'none';
+                } else {
+                    noUsers.style.display = 'none';
+                    usersTable.style.display = 'table';
+                }
+            }
+            
+            function resetFilters() {
+                document.getElementById('filter-name').value = '';
+                document.getElementById('filter-role').value = '';
+                document.getElementById('filter-status').value = '';
+                
+                // Mostra tutte le righe
+                const rows = usersTable.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    row.style.display = '';
+                });
+                
+                noUsers.style.display = 'none';
+                usersTable.style.display = 'table';
+            }
+            
+            // Modal Utente
+            const addUserBtn = document.getElementById('add-user-btn');
+            const userModal = document.getElementById('user-modal');
+            const closeUserModal = document.getElementById('close-user-modal');
+            const cancelUserBtn = document.getElementById('cancel-user-btn');
+            const saveUserBtn = document.getElementById('save-user-btn');
+            const userForm = document.getElementById('user-form');
+            const userModalTitle = document.getElementById('user-modal-title');
+            const passwordHelp = document.getElementById('password-help');
+            
+            // Modal Eliminazione
+            const deleteModal = document.getElementById('delete-modal');
+            const closeDeleteModal = document.getElementById('close-delete-modal');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            
+            // Nuovo Utente
+            addUserBtn.addEventListener('click', function() {
+                userModalTitle.textContent = 'Nuovo Utente';
+                userForm.reset();
+                document.getElementById('user-id').value = '';
+                passwordHelp.style.display = 'none';
+                document.getElementById('user-password').required = true;
+                
+                userModal.style.display = 'block';
+                overlay.classList.add('active');
+            });
+            
+            // Modifica Utente
+            document.querySelectorAll('.edit-user-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    const row = this.closest('tr');
+                    
+                    userModalTitle.textContent = 'Modifica Utente';
+                    document.getElementById('user-id').value = userId;
+                    document.getElementById('user-name').value = row.cells[1].textContent;
+                    document.getElementById('user-email').value = row.cells[2].textContent;
+                    document.getElementById('user-password').value = '';
+                    document.getElementById('user-password').required = false;
+                    passwordHelp.style.display = 'block';
+                    
+                    // Estrai il ruolo dalla classe badge
+                    const roleCell = row.cells[3].querySelector('.badge');
+                    let role = 'docente';
+                    if (roleCell.classList.contains('badge-danger')) {
+                        role = 'admin';
+                    } else if (roleCell.classList.contains('badge-warning')) {
+                        role = 'coordinatore';
+                    }
+                    document.getElementById('user-role').value = role;
+                    
+                    // Estrai lo stato dalla classe badge
+                    const statusCell = row.cells[4].querySelector('.badge');
+                    let status = 'attivo';
+                    if (statusCell.classList.contains('badge-secondary')) {
+                        status = 'inattivo';
+                    } else if (statusCell.classList.contains('badge-danger')) {
+                        status = 'sospeso';
+                    }
+                    document.getElementById('user-status').value = status;
+                    
+                    userModal.style.display = 'block';
+                    overlay.classList.add('active');
+                });
+            });
+            
+            // Elimina Utente
+            document.querySelectorAll('.delete-user-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    document.getElementById('delete-user-id').value = userId;
+                    
+                    deleteModal.style.display = 'block';
+                    overlay.classList.add('active');
+                });
+            });
+            
+            // Chiudi Modal Utente
+            closeUserModal.addEventListener('click', function() {
+                userModal.style.display = 'none';
+                overlay.classList.remove('active');
+            });
+            
+            cancelUserBtn.addEventListener('click', function() {
+                userModal.style.display = 'none';
+                overlay.classList.remove('active');
+            });
+            
+            // Chiudi Modal Eliminazione
+            closeDeleteModal.addEventListener('click', function() {
+                deleteModal.style.display = 'none';
+                overlay.classList.remove('active');
+            });
+            
+            cancelDeleteBtn.addEventListener('click', function() {
+                deleteModal.style.display = 'none';
+                overlay.classList.remove('active');
+            });
+            
+            // Salva Utente
+            saveUserBtn.addEventListener('click', function() {
+                if (!userForm.checkValidity()) {
+                    userForm.reportValidity();
+                    return;
+                }
+                
+                const userId = document.getElementById('user-id').value;
+                const userData = {
+                    name: document.getElementById('user-name').value,
+                    email: document.getElementById('user-email').value,
+                    password: document.getElementById('user-password').value,
+                    role: document.getElementById('user-role').value,
+                    status: document.getElementById('user-status').value
+                };
+                
+                if (userId) {
+                    userData.id = userId;
+                    
+                    // Aggiorna utente (in produzione, chiamata API)
+                    fetch('/admin/api/users', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(userData),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Utente aggiornato con successo!');
+                            location.reload();
+                        } else {
+                            alert('Errore durante l\'aggiornamento: ' + (data.error || 'Errore sconosciuto'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Errore durante l\'aggiornamento. Riprova più tardi.');
+                    });
+                } else {
+                    // Crea nuovo utente (in produzione, chiamata API)
+                    fetch('/admin/api/users', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(userData),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Utente creato con successo!');
+                            location.reload();
+                        } else {
+                            alert('Errore durante la creazione: ' + (data.error || 'Errore sconosciuto'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Errore durante la creazione. Riprova più tardi.');
+                    });
+                }
+            });
+            
+            // Conferma Eliminazione
+            confirmDeleteBtn.addEventListener('click', function() {
+                const userId = document.getElementById('delete-user-id').value;
+                
+                // Elimina utente (in produzione, chiamata API)
+                fetch('/admin/api/users', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: userId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Utente eliminato con successo!');
+                        location.reload();
+                    } else {
+                        alert('Errore durante l\'eliminazione: ' + (data.error || 'Errore sconosciuto'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Errore durante l\'eliminazione. Riprova più tardi.');
+                });
+            });
+            
+            // Responsive adjustments
+            function handleResize() {
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                    document.body.classList.remove('sidebar-open');
+                }
+            }
+            
+            window.addEventListener('resize', handleResize);
+        });
+    </script>
+</body>
+</html>
